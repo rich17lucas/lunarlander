@@ -1,13 +1,28 @@
+import argparse
 import pygame
 import random
 from vec2d import Vec2d
 
+
 pygame.init()
 
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Lunar Lander')
+    parser.add_argument('--scale', '-s', type=int,
+                        help='Set to 1 for normal screens, 2 for 4k screens to make the game bigger')
+
+    _args = parser.parse_args()
+    print(_args)
+    return _args
+
+
+args = parse_args()
 # SCALE is used to increase the size of shapes by
 # set factor, Eg if equal 2, then shapes are twice
 # the size
-SCALE = 2
+
+SCALE: int = args.scale
 
 WIDTH = 800 * SCALE
 HEIGHT = 600 * SCALE
@@ -64,13 +79,14 @@ REPLAY_LABEL = FONT.render('Press R to play again!', 1, (255, 255, 0))
 
 
 class ScalableRect(pygame.Rect):
-    _SCALE = SCALE
+    SCALE = SCALE
 
     def __init__(self, pos_x, pos_y, x, y,):
-        super().__init__(pos_x * ScalableRect._SCALE,
-                         pos_y * ScalableRect._SCALE,
-                         x * ScalableRect._SCALE,
-                         y * ScalableRect._SCALE)
+        # print(f"Class SCALE: {SCALE}")
+        super().__init__(pos_x * self.SCALE,
+                         pos_y * self.SCALE,
+                         x * self.SCALE,
+                         y * self.SCALE)
 
 
 class Lander:
@@ -243,8 +259,7 @@ def update_screen():
     WINDOW.blit(FUEL_LABEL, (0, 30 * SCALE))
     WINDOW.blit(TIME_LABEL, (0, 45 * SCALE))
 
-    if not DONE:
-        print(f"Done {DONE}  Player_Win {PLAYER_WIN}")
+    if DONE:
         if PLAYER_WIN:
             WINDOW.blit(YOU_WIN_LABEL, (250, 200 * SCALE))
             WINDOW.blit(SCORE_LABEL, (250, 230 * SCALE))
@@ -291,10 +306,18 @@ WALLS = [Wall(ScalableRect(0, 0, 800, 1)), Wall(ScalableRect(0, 599, 800, 1)),
 
 def main():
     global FONT
+    global SCALE
+
+    # args = parse_args()
+    # SCALE = args.scale
+    # assert SCALE != None
+    # print(f"args.scale: {args.scale}  SCALE: {SCALE}")
+
     pygame.display.set_caption('Lunar Lander')
     game_loop()
 
     del FONT
+    del SCALE
     pygame.display.quit()
     pygame.quit()
 
