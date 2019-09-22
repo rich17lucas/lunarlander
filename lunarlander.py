@@ -22,7 +22,7 @@ args = parse_args()
 # set factor, Eg if equal 2, then shapes are twice
 # the size
 
-SCALE: int = args.scale
+SCALE: int = args.scale if args.scale is not None else 1
 
 WIDTH = 800 * SCALE
 HEIGHT = 600 * SCALE
@@ -130,8 +130,7 @@ class Wall:
 
 def reset_game():
     global DONE, TIMESTEPS, GOAL, FUEL, SCORE
-
-    GOAL = Platform(Vec2d(random.randint(100, 700), random.randint(100, 500)), Vec2d(1, 1))
+    GOAL = Platform(Vec2d(random.randint(100, 700), 550), Vec2d(1, 1))
 
     PLAYER.pos = Vec2d(400, 300)
     PLAYER.vel = Vec2d(0, 0)
@@ -298,7 +297,7 @@ def game_loop():
 # Player Object
 PLAYER = Lander(True, Vec2d(400, 300), Vec2d(0, 0))
 # Goal Object
-GOAL = Platform(Vec2d(random.randint(100, 700), random.randint(100, 500)), Vec2d(1, 1))
+GOAL = Platform(Vec2d(random.randint(100, 700), 550), Vec2d(1, 1))
 # Wall Object - Top, Bot, Left, Right
 WALLS = [Wall(ScalableRect(0, 0, 800, 1)), Wall(ScalableRect(0, 599, 800, 1)),
          Wall(ScalableRect(0, 0, 1, 600)), Wall(ScalableRect(799, 0, 1, 600))]
