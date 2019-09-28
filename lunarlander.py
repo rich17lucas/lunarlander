@@ -72,6 +72,12 @@ FUEL_LABEL = FONT.render('FUEL: {}'.format(FUEL), 1, (255, 255, 0))
 TIME_LABEL = FONT.render('TIME: {}'.format(TIMESTEPS), 1, (255, 255, 0))
 SCORE_LABEL = FONT.render('SCORE: {}'.format(SCORE), 1, (255, 255, 0))
 
+# Distance from target
+XDIST = 0
+YDIST = 0
+XDIST_LABEL = FONT.render('XDIST: {}'.format(XDIST), 1, (255, 255, 0))
+YDIST_LABEL = FONT.render('YDIST: {}'.format(YDIST), 1, (255, 255, 0))
+
 # End Screen Text
 YOU_WIN_LABEL = FONT.render('You successfully completed the mission!', 1, (255, 255, 0))
 YOU_LOSE_LABEL = FONT.render('You failed to complete the mission!', 1, (255, 255, 0))
@@ -113,7 +119,7 @@ class Platform:
         self.pos = pos
         self.threshold = threshold
         self.lowerHalf = ScalableRect(self.pos.x, self.pos.y+2, 20, 8)
-        self.landingPad = ScalableRect((self.pos.x+5), self.pos.y, 10, 2)
+        self.landingPad = ScalableRect((self.pos.x + 5), self.pos.y, 10, 2)
 
     def draw_self(self, surface):
         pygame.draw.rect(surface, LANDER_COLOR, self.landingPad, 1)
@@ -177,8 +183,11 @@ def handle_events():
 
 
 def update_positions(dt):
+    global XDIST, YDIST, GOAL
     if PLAYER.isAlive:
         PLAYER.move_self(dt)
+        XDIST = GOAL.landingPad[0] - PLAYER.pos[0]
+        YDIST = GOAL.landingPad[1] - PLAYER.pos[1]
 
 
 def update_force():
@@ -196,12 +205,13 @@ def update_force():
 
 
 def update_labels():
-    global ACCX_LABEL, ACCY_LABEL, FUEL_LABEL, TIME_LABEL
+    global ACCX_LABEL, ACCY_LABEL, FUEL_LABEL, TIME_LABEL, XDIST_LABEL, YDIST_LABEL
     ACCX_LABEL = FONT.render('Acceleration X: {:.2f}'.format(PLAYER.acc.x), 1, (255, 255, 0))
     ACCY_LABEL = FONT.render('Acceleration Y: {:.2f}'.format(PLAYER.acc.y), 1, (255, 255, 0))
     FUEL_LABEL = FONT.render('FUEL: {}'.format(int(FUEL)), 1, (255, 255, 0))
     TIME_LABEL = FONT.render('TIME: {}'.format(int(TIMESTEPS/60)), 1, (255, 255, 0))
-
+    XDIST_LABEL = FONT.render('XDIST: {:.0f}'.format(XDIST), 1, (255, 255, 0))
+    YDIST_LABEL = FONT.render('YDIST: {:.0f}'.format(YDIST), 1, (255, 255, 0))
 
 def check_collision():  # ALL OF THE PLAYER_WIN = False LINES ARE NOT NEEDED
     global DONE, PLAYER_WIN, SCORE, SCORE_LABEL
@@ -257,6 +267,9 @@ def update_screen():
     WINDOW.blit(ACCY_LABEL, (0, 15 * SCALE))
     WINDOW.blit(FUEL_LABEL, (0, 30 * SCALE))
     WINDOW.blit(TIME_LABEL, (0, 45 * SCALE))
+    WINDOW.blit(XDIST_LABEL, (0, 60 * SCALE))
+    WINDOW.blit(YDIST_LABEL, (0, 75 * SCALE))
+
 
     if DONE:
         if PLAYER_WIN:
