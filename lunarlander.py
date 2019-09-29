@@ -186,8 +186,8 @@ def update_positions(dt):
     global XDIST, YDIST, GOAL
     if PLAYER.isAlive:
         PLAYER.move_self(dt)
-        XDIST = GOAL.landingPad[0] - PLAYER.pos[0]
-        YDIST = GOAL.landingPad[1] - PLAYER.pos[1]
+        XDIST = abs(GOAL.landingPad.center[0]  - PLAYER.pRect.center[0])
+        YDIST = GOAL.landingPad.midtop[1] + 1 - PLAYER.pRect.midbottom[1]
 
 
 def update_force():
@@ -212,6 +212,7 @@ def update_labels():
     TIME_LABEL = FONT.render('TIME: {}'.format(int(TIMESTEPS/60)), 1, (255, 255, 0))
     XDIST_LABEL = FONT.render('XDIST: {:.0f}'.format(XDIST), 1, (255, 255, 0))
     YDIST_LABEL = FONT.render('YDIST: {:.0f}'.format(YDIST), 1, (255, 255, 0))
+
 
 def check_collision():  # ALL OF THE PLAYER_WIN = False LINES ARE NOT NEEDED
     global DONE, PLAYER_WIN, SCORE, SCORE_LABEL
@@ -318,7 +319,7 @@ WALLS = [Wall(ScalableRect(0, 0, 800, 1)), Wall(ScalableRect(0, 599, 800, 1)),
 
 def main():
     global FONT
-    global SCALE
+    global SCALEw
 
     # args = parse_args()
     # SCALE = args.scale
