@@ -26,6 +26,8 @@ SCALE: int = args.scale if args.scale is not None else 1
 
 WIDTH = 800 * SCALE
 HEIGHT = 600 * SCALE
+GROUND_LEVEL = 550
+
 WINDOW = pygame.display.set_mode(size=(WIDTH, HEIGHT))
 
 BACKGROUND_COLOR = (0, 0, 0)
@@ -83,6 +85,13 @@ YOU_WIN_LABEL = FONT.render('You successfully completed the mission!', 1, (255, 
 YOU_LOSE_LABEL = FONT.render('You failed to complete the mission!', 1, (255, 255, 0))
 REPLAY_LABEL = FONT.render('Press R to play again!', 1, (255, 255, 0))
 
+# Sizes
+GOAL_LANDER_PAD_HEIGHT = 2
+GOAL_LANDER_PAD_WIDTH = 10
+GOAL_LOWER_HALF_HEIGHT = 8
+GOAL_LOWER_HALF_WIDTH = 20
+GOAL_HEIGHT = GOAL_LANDER_PAD_HEIGHT + GOAL_LOWER_HALF_HEIGHT
+
 
 class ScalableRect(pygame.Rect):
     SCALE = SCALE
@@ -93,6 +102,21 @@ class ScalableRect(pygame.Rect):
                          pos_y * self.SCALE,
                          x * self.SCALE,
                          y * self.SCALE)
+
+
+class Ground:
+    def __init__(self, bounds=(1,
+                               GROUND_LEVEL + GOAL_HEIGHT,
+                               WIDTH - 1,
+                               HEIGHT - GROUND_LEVEL + 1)):
+        self.bounds = bounds
+        self.pRect = ScalableRect(self.bounds[0],
+                                  self.bounds[1],
+                                  self.bounds[2],
+                                  self.bounds[3])
+
+    def draw_self(self, surface):
+        pygame.draw.rect(surface, (69, 69, 69), self.pRect)
 
 
 class Lander:
@@ -115,11 +139,11 @@ class Lander:
 
 
 class Platform:
-    def __init__(self, pos=Vec2d(0, 0), threshold=Vec2d(1, 1)):
+    def __init__(self, pos=Vec2d(0, 0), threshold=Vec2d(1, 1) ):
         self.pos = pos
         self.threshold = threshold
-        self.lowerHalf = ScalableRect(self.pos.x, self.pos.y+2, 20, 8)
-        self.landingPad = ScalableRect((self.pos.x + 5), self.pos.y, 10, 2)
+        self.lowerHalf = ScalableRect(self.pos.x, self.pos.y + GOAL_LANDER_PAD_HEIGHT, GOAL_LOWER_HALF_WIDTH, GOAL_LOWER_HALF_HEIGHT)
+        self.landingPad = ScalableRect((self.pos.x + (GOAL_LANDER_PAD_WIDTH / 2)), self.pos.y, GOAL_LANDER_PAD_WIDTH, GOAL_LANDER_PAD_HEIGHT)
 
     def draw_self(self, surface):
         pygame.draw.rect(surface, LANDER_COLOR, self.landingPad, 1)
@@ -136,7 +160,7 @@ class Wall:
 
 def reset_game():
     global DONE, TIMESTEPS, GOAL, FUEL, SCORE
-    GOAL = Platform(Vec2d(random.randint(100, 700), 550), Vec2d(1, 1))
+    GOAL = Platform(Vec2d(random.randint(100, 700), GROUND_LEVEL), Vec2d(1, 1))
 
     PLAYER.pos = Vec2d(400, 300)
     PLAYER.vel = Vec2d(0, 0)
@@ -216,6 +240,7 @@ def update_labels():
 
 def check_collision():  # ALL OF THE PLAYER_WIN = False LINES ARE NOT NEEDED
     global DONE, PLAYER_WIN, SCORE, SCORE_LABEL
+
     # If player collides with the top(Landing Pad)
     if PLAYER.pRect.colliderect(GOAL.landingPad):
         if PLAYER.acc.x < GOAL.threshold.x and PLAYER.acc.y < GOAL.threshold.y:
@@ -234,19 +259,28 @@ def check_collision():  # ALL OF THE PLAYER_WIN = False LINES ARE NOT NEEDED
             print('YOU DIED BUDDY')
             PLAYER_WIN = False
             DONE = True
+
     # If player collides with any other part of the Platform
     if PLAYER.pRect.colliderect(GOAL.lowerHalf):
         print('YOU DIED BUDDY 3')
         PLAYER_WIN = False
         DONE = True
+
     # If player collides with any wall
     for wall in WALLS:
         if PLAYER.pRect.colliderect(wall.bounds):
             print('YOU DIED BUDDY 4')
             PLAYER_WIN = False
             DONE = True
+
     # If player runs out of fuel
     if FUEL <= 0:
+        PLAYER_WIN = False
+        DONE = True
+
+    # If player hits the ground
+    if PLAYER.pRect.colliderect(GROUND.bounds):
+        print('YOU DIED BUDDY 5')
         PLAYER_WIN = False
         DONE = True
 
@@ -257,6 +291,8 @@ def update_screen():
 
     for wall in WALLS:
         wall.draw_self(PLAYER_SCREEN)
+
+    GROUND.draw_self(PLAYER_SCREEN)
 
     GOAL.draw_self(PLAYER_SCREEN)
 
@@ -311,15 +347,16 @@ def game_loop():
 # Player Object
 PLAYER = Lander(True, Vec2d(400, 300), Vec2d(0, 0))
 # Goal Object
-GOAL = Platform(Vec2d(random.randint(100, 700), 550), Vec2d(1, 1))
+GOAL = Platform(Vec2d(random.randint(100, 700), GROUND_LEVEL), Vec2d(1, 1))
 # Wall Object - Top, Bot, Left, Right
 WALLS = [Wall(ScalableRect(0, 0, 800, 1)), Wall(ScalableRect(0, 599, 800, 1)),
          Wall(ScalableRect(0, 0, 1, 600)), Wall(ScalableRect(799, 0, 1, 600))]
 
+GROUND = Ground()
 
 def main():
     global FONT
-    global SCALEw
+    global SCALE
 
     # args = parse_args()
     # SCALE = args.scale
